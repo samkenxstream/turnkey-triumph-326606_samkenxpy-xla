@@ -1569,7 +1569,8 @@ at::Tensor XLANativeFunctions::index(
   XLA_FN_COUNTER("xla::");
   auto dev = self.device();
   bool indices_on_cpu_or_xla = std::all_of(
-      indices.begin(), indices.end(), [=](const at::OptionalTensorRef& opt) {
+      indices.begin(), indices.end(),
+      [=](const c10::optional<at::Tensor>& opt) {
         return opt.has_value() ? (opt->is_cpu() || opt->device() == dev) : true;
       });
   XLA_CHECK(indices_on_cpu_or_xla)
