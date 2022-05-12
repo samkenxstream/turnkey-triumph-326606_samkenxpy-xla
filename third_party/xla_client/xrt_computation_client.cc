@@ -585,9 +585,18 @@ std::vector<ComputationClient::ComputationPtr> XrtComputationClient::Compile(
   for (size_t i = 0; i < instances.size(); ++i) {
     auto builder = [&, this, i]() {
       const CompileInstance& instance = instances[i];
+
+      // (yeounoh) check if spmd partitioning is used
+      bool is_spmd = false;
+      auto& module_proto = instance.computation.proto();
+      if (module_proto.has_spmd_output_sharding() ||
+          module_proto.spmd_parameters_shardings_size() > 0) {
+        is_spmd = true;
+      }
+
       std::unique_ptr<xrt::XLAComputation> xrt_computation =
           CreateXrtComputation(instance.computation, instance.devices,
-                               instance.output_shape);
+                               instance.output_shape, is_spmd);
       CompilationCacheKey cache_key(
           GetResourceDomain(instance.compilation_device),
           xrt_computation->SerializeAsString());
